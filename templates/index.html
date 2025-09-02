@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="static/icon.png" type="image/x-icon">
+  <title>Голос Времени</title>
+  <link rel="stylesheet" href="static/css/styles.css">
+  <script>
+    // При загрузке страницы применяем сохранённую тему (если выбрана)
+    document.addEventListener('DOMContentLoaded', function() {
+      if(localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark-theme');
+      }
+    });
+    // Удаление диалога через AJAX
+    function deleteConversation(conversationId) {
+      fetch("/delete/" + conversationId, { method: "POST" })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === "success") {
+          document.getElementById("conv-" + conversationId).remove();
+        }
+      });
+    }
+    // Переключение темы и сохранение выбора
+    function toggleTheme() {
+      document.body.classList.toggle('dark-theme');
+      if(document.body.classList.contains('dark-theme')) {
+        localStorage.setItem('theme', 'dark');
+      } else {
+        localStorage.setItem('theme', 'light');
+      }
+    }
+  </script>
+</head>
+<body>
+  <div class="messenger-container">
+    <!-- Левая колонка — список диалогов и создание нового чата -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <h2>Голос Времени</h2>
+        <button id="theme-toggle" onclick="toggleTheme()">Сменить тему</button>
+      </div>
+      <ul class="conversation-list">
+        {% for conv_id, conv in conversations.items() %}
+          <li id="conv-{{ conv_id }}">
+            <a href="{{ url_for('conversation', conversation_id=conv_id) }}">
+              {{ conv.person }}
+            </a>
+            <button class="delete-btn" onclick="deleteConversation('{{ conv_id }}')">Удалить</button>
+          </li>
+        {% else %}
+          <li>Нет сохранённых диалогов</li>
+        {% endfor %}
+      </ul>
+      <div class="new-chat">
+        <form method="POST">
+          <!-- autocomplete="off" исключает автозаполнение предыдущими именами -->
+          <input type="text" name="person" placeholder="С кем поговорить?" required autocomplete="off">
+          <button type="submit">Новый диалог</button>
+        </form>
+      </div>
+    </div>
+    <!-- Правая колонка — placeholder области чата -->
+    <div class="chat-container chat-placeholder">
+      <div class="chat-header">
+        <h2>Выберите диалог</h2>
+      </div>
+      <!-- Обёртка для основного контента чата, которая будет заполнять доступное пространство -->
+      <div class="chat-main">
+        <div class="chat-box">
+          <p>Пожалуйста, выберите диалог из списка или начните новый чат.</p>
+        </div>
+      </div>
+      <div class="chat-input">
+        <input type="text" placeholder="Введите сообщение" disabled>
+        <button disabled>Отправить</button>
+      </div>
+    </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Беседа с {{ person }}</title>
+  <link rel="icon" href="{{ url_for('static', filename='icon.png') }}" type="image/x-icon">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <!-- Подключаем Marked.js для поддержки Markdown (на будущее) -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="{{ url_for('static', filename='js/interview.js') }}" defer></script>
+  <script>
+    // При загрузке страницы применяем сохранённую тему (если выбрана)
+    document.addEventListener('DOMContentLoaded', function() {
+      if(localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark-theme');
+      }
+    });
+    function toggleTheme() {
+      document.body.classList.toggle('dark-theme');
+      if(document.body.classList.contains('dark-theme')) {
+        localStorage.setItem('theme', 'dark');
+      } else {
+        localStorage.setItem('theme', 'light');
+      }
+    }
+  </script>
+</head>
+<body>
+  <div class="chat-container chat-page">
+    <div class="chat-header">
+      <h2>Голос Времени | {{ person }}</h2>
+      <div class="header-buttons">
+        <a href="{{ url_for('index') }}" class="back-button">Назад</a>
+        <button id="theme-toggle" onclick="toggleTheme()">Сменить тему</button>
+      </div>
+    </div>
+    <!-- Обёртка для основного контента, чтобы поле ввода оставалось внизу -->
+    <div class="chat-main">
+      <div id="chat-box" class="chat-box" data-person="{{ person }}" data-conversation="{{ conversation_id }}">
+        {% for message in history %}
+          {% if message.role == "user" %}
+            <div class="message user-message">
+              <div class="message-text">{{ message.text }}</div>
+            </div>
+          {% else %}
+            <div class="message bot-message">
+              <div class="message-text">{{ message.text }}</div>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+      <div id="typing-indicator" class="typing-indicator" style="display: none;">Печатает...</div>
+    </div>
+    <!-- Поле ввода закреплено внизу -->
+    <div class="chat-input">
+      <input type="text" id="question" placeholder="Введите сообщение">
+      <button id="send-button" onclick="askQuestion()">Отправить</button>
+    </div>
+  </div>
+</body>
+</html>
